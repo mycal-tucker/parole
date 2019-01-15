@@ -314,6 +314,12 @@ def print_data(parolees):
     out.writeheader()
     out.writerows(parolees)
 
+    with open('output.csv', 'w', newline='') as csvfile:
+        out = csv.DictWriter(csvfile, extrasaction='ignore',
+                             delimiter=',', fieldnames=headers)
+        out.writeheader()
+        out.writerows(parolees)
+
 
 # pylint: disable=too-many-locals
 def scrape(old_data_path, no_download):
