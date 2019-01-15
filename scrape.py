@@ -2,16 +2,16 @@
 Scrape all parole hearing data for NYS.
 """
 
-import pdb
 import argparse
 import csv
 import sys
 
+from builtins import str
 from datetime import datetime
 from string import ascii_uppercase
 from time import localtime, mktime
 from threading import Thread
-from Queue import Queue
+from queue import Queue
 
 import scrapelib
 from bs4 import BeautifulSoup
@@ -34,7 +34,7 @@ def get_existing_parolees(path):
 
             # Ensure row is lowercased (this caused issues with legacy data)
             lc_row = {}
-            for key, value in row.iteritems():
+            for key, value in row.items():
                 key = key.lower()
                 if value:
                     if key in lc_row:
@@ -53,9 +53,9 @@ def baseurls():
     """
     today = localtime()
     #for monthdiff in xrange(-25, 7):
-    for monthdiff in xrange(-2, -1):
+    for monthdiff in range(-2, -1):
         year, month = localtime(mktime(
-            [today.tm_year, today.tm_mon + monthdiff, 1, 0, 0, 0, 0, 0, 0]))[:2]
+            (today.tm_year, today.tm_mon + monthdiff, 1, 0, 0, 0, 0, 0, 0)))[:2]
         #for letter in ascii_uppercase:
         for letter in ascii_uppercase:
             yield (INTERVIEW_URL.format(letter=letter, month=str(month).zfill(2), year=year),
@@ -70,7 +70,7 @@ def get_general_parolee_keys(scraper, url):
     scrape = scraper.get(url)
     soup = BeautifulSoup(scrape.content, 'lxml')
     keys_th = soup.find('table', class_='intv').find('tr').find_all('th')
-    return [unicode(key.string) for key in keys_th]
+    return [str(key.string) for key in keys_th]
 
 
 def fix_defective_sentence(sentence):
@@ -169,7 +169,7 @@ def scrape_detail_parolee(parolee, scraper):
         return
 
     crimes = soup.find('table', class_="intv").find_all('tr')
-    crime_titles = [u"crime {} - " + unicode(th.string)
+    crime_titles = [u"crime {} - " + str(th.string)
                     for th in soup.find('table', class_="intv").find_all('th')]
     for row in detail_table:
         key, value = row.getText().split(":")
@@ -295,7 +295,7 @@ def print_data(parolees):
     # Convert date columns to SQL-compatible date format (like "2014-10-07")
     # when possible
     for parolee in parolees:
-        for key, value in parolee.iteritems():
+        for key, value in parolee.items():
             if "inmate name" in key:
                 continue
             if "date" in key.lower() and value:
@@ -336,7 +336,7 @@ def scrape(old_data_path, no_download):
 
     q = Queue(CONCURRENCY * 2)
     new_parolees_with_details = []
-    for _ in xrange(0, CONCURRENCY):
+    for _ in range(0, CONCURRENCY):
         t = Thread(target=scrape_details(q, new_parolees_with_details, scraper))
         t.daemon = True
         t.start()
